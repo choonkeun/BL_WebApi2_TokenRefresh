@@ -1,0 +1,73 @@
+
+https://stackoverflow.com/questions/20637674/owin-security-how-to-implement-oauth2-refresh-tokens
+
+
+EmployeeID  LastName             FirstName  ReportsTo
+----------- -------------------- ---------- -----------
+1           Davolio              Nancy      2
+2           Fuller               Andrew     1   Admin
+3           Leverling            Janet      2
+4           Peacock              Margaret   2
+5           Buchanan             Steven     1   Admin
+6           Suyama               Michael    5
+7           King                 Robert     5
+8           Callahan             Laura      2
+9           Dodsworth            Anne       5
+
+PM> Install-Package Microsoft.Web.Infrastructure -Version 1.0.0
+
+
+Test step 1 : for all - test web api 2 is working
+http://localhost:25419/api/data/forall
+-->"Now server time is: 8/29/2017 2:42:31 PM"
+
+
+Test step 2 : for all - test web api 2 is working
+http://localhost:25419/api/data/authenticate    - 401 Error
+http://localhost:25419/api/data/authorize       - 401 Error
+
+
+Test step 3 : get Token - user level
+POST http://localhost:25419/token
+Content-Type: x-www-form-urlencoded
+username=Davolio&password=Nancy&grant_type=password
+
+access_token expires : 5 minutes
+refresh_token expires : 20 minutes
+
+{
+    "access_token":"WVz0AymT1yA2RF-GAxiQSAByT99Nr2xyck0bFmaeLvuPqDhG2pttJwIEaYrhQfavaGHxBWauwp11DmhduY6xK2fuWjaYwabTUQxAsKo20NhH9lq4K6QavnXhhIyn8BlhZwPA-cQiTwe2P1h54TNAYvJyGg1F79wRA1weWXuUc8cOreS92joYUYplNvp5pDoCNarhilXDZRRzHxWq4nKiWnM3bOjEgHGW9aiE0yveEbzas4jyPE5Zpso0O-93191Od-yhJYRRs-V9baEqU6VJpvR7XD-HRupav5X04EGIpaSob5iib_N6Gcz6ThLWodzjQQ_UQpmirLgL7ej8u4-r_9R3DM3k8TB4tKXfOwo6tHH0OvKMzu-PaCOXymH1Gtju",
+    "token_type":"bearer",
+    "expires_in":1199,
+    "refresh_token":"fHuGCvFRzoKtuhDBgQaCiA8WqX8Z4HFGKyI0Xe74JX-7Fxmfy-ArwE0-msTMLQLqRau0WMKwIL7Os2PlXPhKGeVu3W9oBGDnJmvHT3OpMM3LiJuXcyMZqxnd3wuQ-G4Gd5SbMlSEPKTKcJSb_FI5xtRdZfSbzUdNRF-pVeoP0pVdYRC96m1Ya4zqRvHTzo4wwKLzApWICyFXo0L-RHm7BYn0nmBVB_zqPjvNxvFJMNEag6G-jYt45mRyIBUt25qOz_S9MS5P0Gd78mDERfanoGcKXQTYnFBH0ylRocGK1rAoUBYYENzXxMNVDtI3cV7fHWNzK_fCznBCdhMWheGMmst1dCOuNj3eX0dV7jxdgj4q7bU4kxl1ja6a7Ofq876y"
+}
+
+Test step 4 : authenticate - user level
+GET http://localhost:25419/api/data/authenticate
+Authorization: bearer WVz0AymT1yA2RF-GAxiQSAByT99Nr2xyck0bFmaeLvuPqDhG2pttJwIEaYrhQfavaGHxBWauwp11DmhduY6xK2fuWjaYwabTUQxAsKo20NhH9lq4K6QavnXhhIyn8BlhZwPA-cQiTwe2P1h54TNAYvJyGg1F79wRA1weWXuUc8cOreS92joYUYplNvp5pDoCNarhilXDZRRzHxWq4nKiWnM3bOjEgHGW9aiE0yveEbzas4jyPE5Zpso0O-93191Od-yhJYRRs-V9baEqU6VJpvR7XD-HRupav5X04EGIpaSob5iib_N6Gcz6ThLWodzjQQ_UQpmirLgL7ej8u4-r_9R3DM3k8TB4tKXfOwo6tHH0OvKMzu-PaCOXymH1Gtju
+--> "Hello Davolio"
+
+Test step 5 : get reflesh Token - user level
+POST  http://localhost:25419/token
+BODY: grant_type=refresh_token&refresh_token=fHuGCvFRzoKtuhDBgQaCiA8WqX8Z4HFGKyI0Xe74JX-7Fxmfy-ArwE0-msTMLQLqRau0WMKwIL7Os2PlXPhKGeVu3W9oBGDnJmvHT3OpMM3LiJuXcyMZqxnd3wuQ-G4Gd5SbMlSEPKTKcJSb_FI5xtRdZfSbzUdNRF-pVeoP0pVdYRC96m1Ya4zqRvHTzo4wwKLzApWICyFXo0L-RHm7BYn0nmBVB_zqPjvNxvFJMNEag6G-jYt45mRyIBUt25qOz_S9MS5P0Gd78mDERfanoGcKXQTYnFBH0ylRocGK1rAoUBYYENzXxMNVDtI3cV7fHWNzK_fCznBCdhMWheGMmst1dCOuNj3eX0dV7jxdgj4q7bU4kxl1ja6a7Ofq876y
+
+Process: ValidateClientAuthentication -> ApplicationRefreshTokenProvider.Receive -> ApplicationRefreshTokenProvider.Create
+
+RESPONSE:
+{
+    "access_token":"RzCl-dAzEiiDK4Qn-eCi5tARKi_X8EtrZbbUUZ74ypV2Vj8fD4EYVKvOLZuHenFXseZQ62lZio5xtp-mCg2raTe_-KzG9wLKGKpB5nHJocHgaBvqhmrYNZBijNnSqaBiXTFxjTC17apOX8n_-KvqXewhbUbWU_T9zEd-Q0R1RPirYiSEyv_JGTXml-g3Gxte8GHbRW7pVbIyAPO1-s__BAlCUuDz-KaH1Sm6jLj1DLBlFGUBov1D129yMlkZYfh5KnuV-BJAdsdo2M8bZXLp7hZUO_XPLI4wIJ6ZSWbMLVJT6gWcIvv0fIUzdscBua2lViDrtKxXaf3WHyKEvpGKa0a7i-tDakAck3AhnUGjkDA",
+    "token_type":"bearer",
+    "expires_in":86399,
+    "refresh_token":"iS7r9jLz3UbhvFyUPr-NqqMfnUwdOWUUfBFNpNeD15kF7wWvZJTKPGRmGA46gU48vKY4RwDNA1aYHyu9LvKbu6kJViRynAD5eKmSO8Jg7OfTk0u3eqoFoou3YxiMbiTcAxyHCWVxEoJV8CXyAY5JD3aL6lZm8swzZnQ90FufKHBTzXO7jGGe3N58y1gMBrLuadNuyhuH457tDB8XkLFqto-mIDuvzNzR4ARKejZDztn-Y8nCvw7Tr6A4H5zY7r9eGbSC1bD0UAhv1M1-YV3HFxiONWnMuI9OB-aeAvNaqHRDqMflVdc6V-1kpeD5N2csyy76wqEPfrZBN3AVCaGEotNBEiimNo0RDo2XH-AskAU"
+}
+
+Test step 6 : authenticate with new token- user level
+GET http://localhost:25419/api/data/authenticate
+Authorization: bearer RzCl-dAzEiiDK4Qn-eCi5tARKi_X8EtrZbbUUZ74ypV2Vj8fD4EYVKvOLZuHenFXseZQ62lZio5xtp-mCg2raTe_-KzG9wLKGKpB5nHJocHgaBvqhmrYNZBijNnSqaBiXTFxjTC17apOX8n_-KvqXewhbUbWU_T9zEd-Q0R1RPirYiSEyv_JGTXml-g3Gxte8GHbRW7pVbIyAPO1-s__BAlCUuDz-KaH1Sm6jLj1DLBlFGUBov1D129yMlkZYfh5KnuV-BJAdsdo2M8bZXLp7hZUO_XPLI4wIJ6ZSWbMLVJT6gWcIvv0fIUzdscBua2lViDrtKxXaf3WHyKEvpGKa0a7i-tDakAck3AhnUGjkDA
+--> "Hello Davolio"
+
+Test step 7 : authenticate with original access token- user level : original token is not expired yet
+GET http://localhost:25419/api/data/authenticate
+Authorization: bearer h3bGUyqTLZxzt9McFepJH4DspJl3Qw0RsbSzAeELpmcG5-6uRlMOQVnxhldLqH_IzzQvkCp2pJsaWhBHJM9jWv0AngrZMmnWHl9nIJ3IRh72-iW9bH9vxQQ8P1rokaIcvc7oLlwA1ZAa23icb__un2w6AB2qhx6MPVzyFBYhoQQb00oeMguIdk7pSuErs5EmTl9--hUcj0wzHR-Qls-gVWx1FtJhKlufOcYdsTGT6K3y6SCu7Uy4L4EfowWjmkXIC904_O86LWhpQKO4pWmZX-F7Zj8FlTjeSrjO-zeQtymRh9lVP4Dh9qe4-bKxpm_3fM5EMuYSQBZHjKEkaB_fBrlS2rf6MkrFGXB-5FqmNIE
+--> "Hello Davolio"
+
